@@ -1,3 +1,8 @@
+%Deze code poogt met behulpt van regionprops het massamiddelpunt 
+%te berekenen en te gebruiken van berekeningen. De code is niet 
+%volledig afgewerkt zoals Final_code.m, omdat ze niet meer gebruikt
+%wordt.
+
 close all
 clear;
 clc;
@@ -29,17 +34,8 @@ for i=1:no_frames-1
     
     frame = read(vid,i);   
     %% Frame processing here %%
-    %imshow(grayframe);
     [dif,fRGB] = removeBackgroundRGB(im2double(background),...
                                   im2double(frame),0.15);
-    
-    %% Deze werken:
-    %{
-    se_disk=strel('disk',5,0);
-    se_rec=strel('rectangle',[5 5]);
-    se_disk2=strel('disk',7,0);
-    se_rec2=strel('rectangle',[7 7]);
-    %}
     
     se_disk=strel('disk',5,0);
     se_rec=strel('rectangle',[5 5]);
@@ -54,16 +50,10 @@ for i=1:no_frames-1
     %together
     f = imclose(f,se_disk);
     %Perform a second opening to remove more shadown
-    %f1 = imopen(f1,se1);
-    
     f = imopen(f,se_rec2);
+    %One more closing for consolidation
     f = imclose(f,se_disk2);
-    
-    %{
-    Volgende stap:
-        probeer enkel de grootste bouding box over te houden,
-        en pas de berekeningen dan allemaal op die bounding box toe
-    %}
+ 
     
     %Calculate all necessary info in the image:
     [L, number] = bwlabel(f,8);
@@ -86,10 +76,8 @@ for i=1:no_frames-1
     end
     
     
-    fprintf('Frame %d',i);
-    if number > 2
-        fprintf(' Jump\n');
-    end
+    fprintf('\b\b\b\b\b\b\b\b\b\b');
+    fprintf('Frame %d\r',i);
     
     %Calculate number of white pixels on the image
     amountOfWhite(i) = sum(f,'all');
@@ -103,7 +91,7 @@ for i=1:no_frames-1
     elseif area ~=0
         massCenter(i,:) = [480, 0];
     end
-    %{
+    
     imshow(f);
     drawnow;
     hold on
@@ -114,9 +102,9 @@ for i=1:no_frames-1
     end
     hold off
     drawnow;
-    %}
+    
 end
-wMax = max(amountOfWhite); %Maximum amount of white pixels on the screen
+[wMax maxFrame] = max(amountOfWhite); %Maximum amount of white pixels on the screen
 
 %Find first frame with more than 10% of the maximum amount of white pixels
 firstFrame = 0;
@@ -133,7 +121,7 @@ end
 %the maximum amount of white pixels is found while the half of the film has
 %passed.
 finalFrame = 0;
-for i=half_no_frames:1:no_frames-1
+for i=maxFrame:1:no_frames-1
     if amountOfWhite(i) <= 0.10*wMax
         finalFrame = i;
         break

@@ -142,4 +142,3 @@ for r=1:1:number
     rectangle('Position',[upperLeftX,upperLeftY,x_len,y_len],'EdgeColor','b');
     rectangle('Position',[centerX-2, centerY-2,4,4],'Curvature',[1 1],'EdgeColor','g','FaceColor','g');
 end
-

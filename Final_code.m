@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 close all
 clear;
 clc;
 
 % create video  object
-vid = VideoReader('Wandeling_2c.mp4');
+vid = VideoReader('Wandeling_2a.mp4');
 
 %Get properties from video
 framerate = vid.framerate;
@@ -12,13 +11,6 @@ duration = vid.duration;
 no_frames = vid.NumberOfFrames;
 vidHeight = vid.Height;
 vidWidth = vid.Width;
-
-%Find half the number of frames:
-if mod(no_frames,2) ~= 0
-    half_no_frames = (no_frames+1) / 2;
-else
-    half_no_frames = (no_frames) / 2;
-end
 
 %get video frames
 background = read(vid,1);
@@ -30,7 +22,6 @@ for i=1:no_frames-1
     
     frame = read(vid,i);   
     %% Frame processing here %%
-    %imshow(grayframe);
     [dif,fRGB] = removeBackgroundRGB(im2double(background),...
                                   im2double(frame),0.15);
     
@@ -85,11 +76,11 @@ for i=1:no_frames-1
     
     %Calculate number of white pixels
     amountOfWhite(i) = sum(f,'all');
-    %Calculate center of mass
+    %Store center of mass
     massCenter(i,:) = [centerX,centerY];
     
-    %imshow(f);
-    %{
+    imshow(f);
+    
     drawnow;
     hold on
     for r=1:1:number
@@ -102,7 +93,6 @@ for i=1:no_frames-1
             'EdgeColor','r','FaceColor','r', 'LineWidth', 2);
     hold off
     drawnow;
-    %}
 end
 
 %% Berekeningen
@@ -142,10 +132,11 @@ figure
 
 heights = massCenter(firstFrame:finalFrame,1);
 heights = vidHeight - heights;
+
 %Implement moving average filter
 a = 1;
 b = 1;
-%b = [1/2 1/2];
+%b = [1/2, 1/2];
 %b = [1/4, 1/4, 1/4, 1/4];
 %b = [1/5, 1/5, 1/5, 1/5, 1/5];
 heightsFiltered = filter(b,a,heights);
@@ -162,8 +153,9 @@ minMax = maxValue - minValue;
 [peakValues peakFrames] = findpeaks(heightsFiltered,'MinPeakDistance',13,...
                             'MinPeakHeight',minValue + 0.20*minMax);
 
-
-
+%Find the correct frame point for each peak
+peakFrames = peakFrames + firstFrame - 1;
+                        
 %Find the position relating to each height:
 %First find the measured values
 pos = massCenter(firstFrame:finalFrame,2);
@@ -177,17 +169,11 @@ distance_factor = distance / vidWidth;
 %Since the range actually has to be [0,640], it will be normalized:
 norm_pos = round(640*(pos - min(pos)) / (max(pos) - min(pos)));
 
-
-%Make sure to also translate a certain frame to a certain time:
-
 %Plot those positions
 plot(norm_pos*distance_factor,heightsFiltered);
 xlabel('Position');
 ylabel('Height in the frame');
 title('Height of center of mass per position');
-
-%Find the correct frame point for each peak
-peakFrames = peakFrames + firstFrame - 1;
 
 %Plot the peaks in function of time
 figure
@@ -237,6 +223,3 @@ for i=1:1:9
         imshow(read(vid,peakFrames(i)));
     end
 end
-=======
-test
->>>>>>> 34c1a2466b8d2fbeb3525f06212739e8d1534662

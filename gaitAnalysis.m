@@ -27,13 +27,6 @@ no_frames = vid.NumberOfFrames;
 vidHeight = vid.Height;
 vidWidth = vid.Width;
 
-%Find half the number of frames:
-if mod(no_frames,2) ~= 0
-    half_no_frames = (no_frames+1) / 2;
-else
-    half_no_frames = (no_frames) / 2;
-end
-
 %get video frames
 background = read(vid,1);
 backgroundG = rgb2gray(background);
@@ -72,6 +65,7 @@ for i=1:no_frames-1
     
     
     %Calculate all necessary info in the image:
+    %Manage the display of the current frame number
     [L, number] = bwlabel(f,8);
     stats = regionprops(L,'basic');
     if i == 1
@@ -112,24 +106,9 @@ for i=1:no_frames-1
     
     %Calculate number of white pixels
     amountOfWhite(i) = sum(f,'all');
-    %Calculate center of mass
+    %Store center of mass
     massCenter(i,:) = [centerX,centerY];
     
-    %imshow(f);
-    %{
-    drawnow;
-    hold on
-    for r=1:1:number
-        rectangle('Position',stats(r).BoundingBox,'EdgeColor','y','LineWidth', 2);
-        rectangle('Position',[stats(r).Centroid,1,1],'Curvature',[1 1],...
-            'EdgeColor','g','FaceColor','g', 'LineWidth', 2);
-        
-    end
-    rectangle('Position',[centerY, centerX,1,1],...
-            'EdgeColor','r','FaceColor','r', 'LineWidth', 2);
-    hold off
-    drawnow;
-    %}
 end
 
 %% Berekeningen
@@ -189,7 +168,8 @@ minMax = maxValue - minValue;
 [peakValues peakFrames] = findpeaks(heightsFiltered,'MinPeakDistance',13,...
                             'MinPeakHeight',minValue + 0.20*minMax);
 
-
+%Find the correct frame point for each peak
+peakFrames = peakFrames + firstFrame - 1;
 
 %Find the position relating to each height:
 %First find the measured values
@@ -203,14 +183,6 @@ distance_factor = distance / vidWidth;
 %This is because of the decision on the first and final frames
 %Since the range actually has to be [0,640], it will be normalized:
 norm_pos = round(640*(pos - min(pos)) / (max(pos) - min(pos)));
-
-
-%Make sure to also translate a certain frame to a certain time:
-
-
-%Find the correct frame point for each peak
-peakFrames = peakFrames + firstFrame - 1;
-
 
 %Matrix to store the found values:
 information = zeros(size(peakValues,1)-1,3);
